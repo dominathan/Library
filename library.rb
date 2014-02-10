@@ -1,9 +1,7 @@
 
 class Book
-  attr_accessor :author
-  attr_accessor :title
-  attr_accessor :id
-  attr_accessor :status
+  attr_accessor :author, :title, :id, :status, :borrower
+
 
   def initialize(title,author)
     @author = author
@@ -12,26 +10,21 @@ class Book
   end
 
   def check_out()
-    if @status=='available'
-      @status='checked_out'
+    if @status == 'available'
+      @status = 'checked_out'
+    else
+      false
     end
-    # if @status=='checked_out'
-    #   return false
-    # end
-
   end
 
   def check_in()
      if @status == 'checked_out'
        @status = 'available'
-     else
-       @status = 'available'
-      end
+     end
   end
 
-
-
 end
+
 
 
 # _______________________________BORROW CLASS________________________________________________________________
@@ -52,10 +45,12 @@ class Library
   attr_accessor :title
   attr_accessor :author
   attr_accessor :books
+  attr_accessor :borrowerhash
 
   def initialize(name)
     @books = []
     @idcounter = 50
+    @borrowerhash = {}
   end
 
   def register_new_book(title,author,id=nil)
@@ -71,23 +66,70 @@ class Library
   end
 
   def check_out_book(book_id, borrower)
-    book = @books.find {|book| book.id }
-    puts book.title
-    book.check_out
-    puts book.status
+    if @borrowerhash[book_id] == nil
+      # if borrower appears in @borrowerhash < 3.
+      all_borrowers_in_list = @borrowerhash.values
+      if all_borrowers_in_list.count(borrower) < 2
+
+      #
+        book = @books.find {|book| book.id == book_id}
+        book.check_out
+        @borrowerhash.store(book_id, borrower)
+        return book
+      else
+        return nil
+      end
+        # nil
+    else
+      return nil
+    end
   end
 
+
+
+  def get_borrower(book_id)
+    name = @borrowerhash[book_id].name
+    return name
+  end
+
+
   def check_in_book(book)
+    #check book back in, change status to available, delete his name from the hash
+    if book.status == 'checked_out'
+      book.status = 'available'
+      #delete the users name from the hash
+    else
+      puts "Book cannot be checked in because it is not checked_out"
+    end
+
   end
 
   def available_books
+    available_book_total = []
+    @books.each do |book|
+      if book.status == 'available'
+        available_book_total.push(book)
+      end
+    end
+    return available_book_total
   end
 
   def borrowed_books
+    borrowed_book_total = []
+    @books.each do |book|
+      if book.status == 'checked_out'
+        borrowed_book_total.push(book)
+      end
+    end
+    return borrowed_book_total
   end
 end
 
-lib = Library.new('library')
-lib.register_new_book("Green Eggs and Ham", "Dr. Seuss")
-sam = Borrower.new('Sam-I-am')
-lib.check_out_book(0,sam)
+
+    # lib = Library.new('library')
+    # lib.register_new_book("Eloquent JavaScript", "Marijn Haverbeke")
+    # lib.register_new_book("Essential JavaScript Design Patterns", "Addy Osmani")
+    # lib.register_new_book("JavaScript: The Good Parts", "Douglas Crockford")
+    # jordan = Borrower.new("Michael jordan")
+
+
